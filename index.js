@@ -21,25 +21,6 @@ const db = getFirestore(app);
 
 const users = [];
 
-// async function getData(){
-//     const browser = await puppeteer.launch();
-//     const page = await browser.newPage();
-//     await page.goto("https://slippi.gg/user/mike-157")
-//     // const element = await page.waitForSelector('p > .css-1rxv754');
-
-
-//     const username = await page.$eval('.css-dshe97', (el) => el.innerText);
-//     const ELO = await page.$eval('.css-1rxv754', (el) => el.innerText);
-//     const rank = await page.$eval('.css-jh714q', (el) => el.innerText);
-//     console.log(username);
-//     console.log(ELO);
-//     console.log(rank);
-//     users.push({name:username,elo:ELO,rank:rank})
-
-//     await browser.close();
-//     // await page.screenshot({path: "ranked.png"})
-//     console.log(users)
-
 const addPlayer = async (user) => {
 
     try {
