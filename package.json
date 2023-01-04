@@ -1,0 +1,7 @@
+{
+  "type": "module",
+  "dependencies": {
+    "firebase": "^9.15.0",
+    "puppeteer": "^19.4.1"
+  }
+}
