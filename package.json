@@ -3,5 +3,8 @@
     "discord.js": "^14.7.1",
     "firebase": "^9.15.0",
     "puppeteer": "^19.4.1"
+  },
+  "devDependencies": {
+    "prettier": "2.8.2"
   }
 }
