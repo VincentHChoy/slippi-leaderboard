@@ -1,57 +1,84 @@
-// Import puppeteer
-import puppeteer from 'puppeteer';
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { doc, setDoc } from "firebase/firestore";
+// import db from "./db"
+// import { clientId, guildId, token } from './config.json'
+const { REST, Routes } = require("discord.js");
+const { addPlayer, showLeaderboard, updateLeaderboard } = require("./helpers");
+const { token, clientId } = require("./config.json");
+const commands = [
+  {
+    name: "ping",
+    description: "Replies with Pong!",
+  },
+  {
+    name: "add",
+    type: 1,
+    description: "adds player to leaderboard",
+    options: [
+      {
+        name: "tag",
+        description: "a slippi tag to be added to the leaderboard",
+        type: 3,
+        required: true,
+      },
+    ],
+  },
+  {
+    name: "leaderboard",
+    description: "shows the slippi leaderboard",
+  },
+  {
+    name: "update",
+    description: "update the slippi leaderboard",
+  },
+];
 
+const rest = new REST({ version: "10" }).setToken(token);
 
-const firebaseConfig = {
-    apiKey: "AIzaSyBkQ-dEUw_zxgbAjKf-Siyz4y_jpau461Q",
-    authDomain: "slippi-leaderboard-a6d80.firebaseapp.com",
-    projectId: "slippi-leaderboard-a6d80",
-    storageBucket: "slippi-leaderboard-a6d80.appspot.com",
-    messagingSenderId: "954710948059",
-    appId: "1:954710948059:web:158aaf4bc8a419844474fe",
-    measurementId: "G-XP529TPX2K"
-};
+(async () => {
+  try {
+    console.log("Started refreshing application (/) commands.");
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+    await rest.put(Routes.applicationCommands(clientId), { body: commands });
+    console.log("Successfully reloaded application (/) commands.");
+  } catch (error) {
+    console.error(error);
+  }
+})();
 
-const users = [];
+const { clientId, GatewayIntentBits } = require("discord.js");
+const clientId = new clientId({ intents: [GatewayIntentBits.Guilds] });
 
-const addPlayer = async (user) => {
+clientId.on("ready", () => {
+  console.log(`Logged in as ${clientId.user.tag}!`);
+});
 
-    try {
-        {
-            const data = {name: user.name, elo: 1900, rank: user.rank}
-            await setDoc(doc(db, "users", user.name), data);
-        }
-    } catch (e) {
-        console.error("Error adding document: ", e);
+clientId.on("interactionCreate", async (interaction) => {
+  const { commandName, options } = interaction;
+
+  if (!interaction.isChatInputCommand()) return;
+
+  if (interaction.commandName === "ping") {
+    await interaction.reply("Pong!");
+  }
+
+  if (interaction.commandName === "add") {
+    const tag = options.getString("tag");
+    const result = await addPlayer(tag);
+
+    await interaction.reply(result);
+  }
+  if (interaction.commandName === "leaderboard") {
+    const list = await showLeaderboard();
+    let msg = "";
+    for (const player of list) {
+      msg += player + "\n";
     }
-}
+    await interaction.reply(msg);
+  }
 
-// }
+  if (interaction.commandName === "update") {
+    updateLeaderboard();
+    await interaction.reply("Leaderboard updated!");
+  }
+});
 
-const getPlayer = async (tag) => {
-    const name = tag.split('#')
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    await page.goto(`https://slippi.gg/user/${name[0]}-${name[1]}`)
-    // const element = await page.waitForSelector('p > .css-1rxv754');
-
-    const username = await page.$eval('.css-dshe97', (el) => el.innerText);
-    console.log(username);
-    const ELO = await page.$eval('.css-1rxv754', (el) => el.innerText);
-    console.log(ELO);
-    const rank = await page.$eval('.css-jh714q', (el) => el.innerText);
-    console.log(rank);
-    await browser.close();
-    addPlayer({ name: username, elo: ELO, rank: rank })
-
-}
-getPlayer('kase#672')
-// getData()
-
+clientId.login(token);
